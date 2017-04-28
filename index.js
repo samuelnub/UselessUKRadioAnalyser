@@ -24,6 +24,7 @@
                 radioURL: radioURL,
                 startTime: Date.now(),
                 endTime: Date.now(),
+                lastSongText: "",
                 totalPlayed: 0,
                 songList: {}
             };
@@ -35,14 +36,12 @@
 
             const radioDocument = radioIframe.contentWindow.document || radioIframe.contentDocument;
 
-            let lastSongText;
-
             const songTextElement = radioDocument.getElementsByClassName("song-text")[0];
             songTextElement.addEventListener("DOMSubtreeModified", addSongToList);
             addSongToList();
             function addSongToList() {
                 const songText = songTextElement.innerHTML;
-                if(songText === lastSongText) {
+                if(songText === songs.lastSongText) {
                     return;
                 }
                 const songTextSanitised = songText.replace(/[^A-za-z_]/g, "")
@@ -58,7 +57,7 @@
                 console.log(songs.songList);
                 songs.songList[songTextSanitised] = ourSong;
                 debug("Added song " + songText);
-                lastSongText = songText;
+                songs.lastSongText = songText;
             }
         };
     });
