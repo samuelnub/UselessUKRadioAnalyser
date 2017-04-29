@@ -7,16 +7,13 @@
 
     document.getElementById("radio-URL-submit").addEventListener("click", (e) => {
         debug("boop!");
-        if (ourInterval) {
-            clearInterval(ourInterval);
-        }
 
         const radioURL = document.getElementById("radio-URL-input").value;
         const radioIframe = document.getElementById("radio-iframe");
         radioIframe.setAttribute("src", radioURL);
 
         const ourFilename = "output-" + radioURL.replace(/[^A-Za-z]/g, "") + ".json";
-        if(checkIfOutputFileExists(ourFilename)) {
+        if (checkIfOutputFileExists(ourFilename)) {
             songs = JSON.parse(fs.readFileSync(outputPath + ourFilename));
         } else if (Object.keys(songs).length === 0) {
             songs = {
@@ -32,16 +29,25 @@
 
 
         radioIframe.onload = () => {
-            ourInterval = setInterval(saveProgress, 1000 * 60 * 2);
+            if (ourInterval) {
+                clearInterval(ourInterval);
+            }
 
+            debug("onload called for iframe!");
             const radioDocument = radioIframe.contentWindow.document || radioIframe.contentDocument;
+
+            ourInterval = setInterval(() => {
+                saveProgress();
+                radioIframe.src = radioIframe.src;
+                debug("Reloaded!");
+            }, 1000 * 60);
 
             const songTextElement = radioDocument.getElementsByClassName("song-text")[0];
             songTextElement.addEventListener("DOMSubtreeModified", addSongToList);
             addSongToList();
             function addSongToList() {
                 const songText = songTextElement.innerHTML;
-                if(songText === songs.lastSongText) {
+                if (songText === songs.lastSongText) {
                     return;
                 }
                 const songTextSanitised = songText.replace(/[^A-za-z_]/g, "")
